@@ -1,0 +1,29 @@
+name: Frontend tests and build
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-tests.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-tests.yml'
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run proxy unit tests
+        working-directory: frontend
+        run: npm test
+      - name: Build static frontend
+        working-directory: frontend
+        run: npm run build
+      - name: Check generated assets
+        working-directory: frontend
+        run: test -s dist/index.html && test -s dist/styles.css && test -s dist/app.js
