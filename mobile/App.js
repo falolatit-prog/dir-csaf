@@ -6,10 +6,12 @@ import {StatusBar} from 'expo-status-bar';
 const {add,markSynced,pending}=require('./src/queue.cjs');
 const STORAGE_KEY='dircsaf.field.queue.v1';
 const SETTINGS_KEY='dircsaf.field.api.v1';
+const CLIENT_KEY='dircsaf.field.client.v1';
 function Button({title,onPress,disabled=false}){return <TouchableOpacity accessibilityRole="button" disabled={disabled} onPress={onPress} style={[styles.button,disabled&&{opacity:0.5}]}><Text style={styles.buttonText}>{title}</Text></TouchableOpacity>}
 function Field({label,value,onChangeText,placeholder,autoCapitalize='sentences'}){return <View style={styles.field}><Text style={styles.label}>{label}</Text><TextInput style={styles.input} value={value} onChangeText={onChangeText} placeholder={placeholder} autoCapitalize={autoCapitalize} /></View>}
 export default function App(){
  const [apiUrl,setApiUrl]=useState('');
+ const [clientId,setClientId]=useState('');
  const [token,setToken]=useState('');
  const [objectId,setObjectId]=useState('');
  const [location,setLocation]=useState('');
@@ -20,6 +22,9 @@ export default function App(){
  const [busy,setBusy]=useState(false);
  const [message,setMessage]=useState('Field observations are not identity confirmations.');
  useEffect(()=>{(async()=>{try{
+   let id=await AsyncStorage.getItem(CLIENT_KEY);
+   if(!id){id='device-'+Date.now()+'-'+Math.random().toString(36).slice(2);await AsyncStorage.setItem(CLIENT_KEY,id)}
+   setClientId(id);
    const saved=await AsyncStorage.getItem(STORAGE_KEY);
    if(saved)setQueue(JSON.parse(saved));
    const url=await AsyncStorage.getItem(SETTINGS_KEY);
@@ -44,6 +49,7 @@ export default function App(){
  }
  async function sync(){
    if(busy)return;
+   if(!clientId){Alert.alert('Device not ready','Wait for device initialization.');return}
    if(!apiUrl.trim()||!token.trim()){Alert.alert('API settings required','Enter the reachable API URL and development access token.');return}
    if(!/^https?:\/\//i.test(apiUrl.trim())){Alert.alert('Invalid URL','Enter a full http:// or https:// URL.');return}
    setBusy(true);
@@ -52,7 +58,7 @@ export default function App(){
      for(const item of pending(current)){
        const response=await fetch(apiUrl.replace(/\/$/,'')+'/observations/sync',{
          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-         body:JSON.stringify({client_id:'dircsaf-field-v1',request_id:item.local_id,object_id:item.object_id,observed_location:item.observed_location,
+         body:JSON.stringify({client_id:clientId,request_id:item.local_id,object_id:item.object_id,observed_location:item.observed_location,
            observer:item.observer,evidence_ref:item.evidence_ref})});
        const result=await response.json();
        if(!response.ok)throw new Error(result.error||'HTTP '+response.status);
