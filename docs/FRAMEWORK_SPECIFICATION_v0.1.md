@@ -4,11 +4,11 @@
 **Status:** Proposed design; not implemented or validated  
 **Repository:** falolatit-prog/dir-csaf
 
-## 1. Controlling proposed endeavor
+## 1. Project scope and research objectives
 
-> To develop and deploy a scalable, data-driven, risk-informed collections stewardship framework that strengthens inventory accountability, improves preservation planning, and safeguards nationally significant cultural heritage collections across U.S. museums and archives.
+DIR-CSAF is a scalable, data-driven, risk-informed collections stewardship research framework focused on inventory accountability, preservation planning, and safeguarding significant cultural heritage collections across museums and archives.
 
-**Scope rule:** Every feature, experiment, and claimed outcome must trace to inventory accountability, preservation planning, or safeguarding cultural heritage. No deployed system, institutional adoption, prediction accuracy, or preservation improvement is claimed by this specification.
+**Scope rule:** Every feature and experiment must support inventory accountability, preservation planning, or cultural heritage safeguarding. This specification does not claim deployment, institutional adoption, predictive accuracy, or demonstrated preservation improvement.
 
 ## 2. Architecture baseline
 
@@ -157,7 +157,7 @@ Potential components, subject to design review:
 - Mobile capture and physical verification client.
 - Versioned model and evaluation pipeline.
 
-Technology choices must follow reproducibility, institutional interoperability, maintainability, and data-governance requirements. A particular stack is not part of the endeavor statement.
+Technology choices must follow reproducibility, institutional interoperability, maintainability, and data-governance requirements. The architecture does not mandate a particular technology stack.
 
 ## 10. Milestones and exit gates
 
