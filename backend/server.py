@@ -4,6 +4,7 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 from dircsaf import connect, add_object, observe, list_cases, review_case, risk_baseline, audit_events
+from intelligence import image_signature, match_images, train_risk_model, predict_risk, rank_preservation_actions
 
 DB_PATH = os.environ.get("DIRCSAF_DB", "dircsaf.db")
 
@@ -26,6 +27,16 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length) or b"{}")
             if not isinstance(payload, dict):
                 return self.respond(400, {"error":"JSON object required"})
+        if method == "POST" and path == "/vision/signature":
+            return self.respond(200, {"signature":image_signature(payload["pixels"],payload["width"],payload["height"])})
+        if method == "POST" and path == "/vision/match":
+            return self.respond(200, match_images(payload["query_signature"],payload["references"],payload.get("limit",5)))
+        if method == "POST" and path == "/models/risk/train":
+            return self.respond(200, train_risk_model(payload["examples"]))
+        if method == "POST" and path == "/models/risk/predict":
+            return self.respond(200, predict_risk(payload["model"],payload["features"]))
+        if method == "POST" and path == "/preservation/plan":
+            return self.respond(200, rank_preservation_actions(payload["items"],payload["capacity"]))
         with connect(DB_PATH) as db:
             if method == "GET" and path == "/health":
                 return self.respond(200, {"status":"ok","service":"dir-csaf"})
