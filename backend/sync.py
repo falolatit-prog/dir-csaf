@@ -6,7 +6,9 @@ the same key returns the same response; reuse with different content is rejected
 import hashlib
 import json
 import sqlite3
-from dircsaf import observe
+import uuid
+from datetime import datetime, timezone
+from dircsaf import get_object, audit
 
 def initialize(db):
     db.execute("""CREATE TABLE IF NOT EXISTS sync_receipts (
@@ -39,7 +41,25 @@ def submit_observation(db, payload):
             if row["payload_hash"]!=digest: raise ValueError("idempotency key reused with different observation")
             db.commit()
             return json.loads(row["response_json"])
-        response=observe(db,**data)
+        obj=get_object(db,data["object_id"])
+        if obj is None: raise LookupError("object not found")
+        if any(not isinstance(v,str) or not v.strip() for v in data.values()):
+            raise ValueError("observation fields must be nonempty strings")
+        oid=str(uuid.uuid4())
+        mismatch=data["observed_location"].strip().casefold()!=obj["expected_location"].strip().casefold()
+        case_id=str(uuid.uuid4()) if mismatch else None
+        timestamp=datetime.now(timezone.utc).isoformat()
+        db.execute("INSERT INTO observations VALUES(?,?,?,?,?,?)",
+                   (oid,data["object_id"],data["observed_location"],data["observer"],data["evidence_ref"],timestamp))
+        audit(db,"physical_observation",oid,data["observer"],
+              {"object_id":data["object_id"],"evidence_ref":data["evidence_ref"]})
+        if mismatch:
+            db.execute("INSERT INTO cases(id,object_id,observation_id,status,reason,created_at) VALUES(?,?,?,?,?,?)",
+                       (case_id,data["object_id"],oid,"needs_evidence","location_discrepancy",timestamp))
+            audit(db,"case_opened",case_id,data["observer"],
+                  {"observation_id":oid,"expected":obj["expected_location"],"observed":data["observed_location"]})
+        response={"observation_id":oid,"discrepancy":mismatch,"case_id":case_id,
+                  "verification_status":"discrepant" if mismatch else "observation_consistent_unverified"}
         db.execute("INSERT INTO sync_receipts VALUES(?,?,?,?)",
                    (client_id,request_id,digest,json.dumps(response,sort_keys=True)))
         db.commit()
