@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 from dircsaf import connect, add_object, observe, list_cases, review_case, risk_baseline, audit_events
 from intelligence import image_signature, match_images, train_risk_model, predict_risk, rank_preservation_actions
+from sync import submit_observation
 from stewardship import initialize, add_evidence, save_assessment, create_action, transition_action, dashboard, list_objects, list_actions
 
 DB_PATH = os.environ.get("DIRCSAF_DB", "dircsaf.db")
@@ -68,6 +69,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(200, {"status":"ok","service":"dir-csaf"})
             if method == "POST" and path == "/objects":
                 return self.respond(201, add_object(db, payload))
+            if method == "POST" and path == "/observations/sync":
+                return self.respond(201, submit_observation(db,payload))
             if method == "POST" and path == "/observations":
                 return self.respond(201, observe(db, payload["object_id"], payload["observed_location"], payload["observer"], payload["evidence_ref"]))
             if method == "GET" and path == "/cases":
