@@ -44,8 +44,10 @@ td,th{border-bottom:1px solid #e6ecf3;padding:9px;text-align:left;overflow-wrap:
 </main>
 <script>
 const $=id=>document.getElementById(id);
+let devToken='';
+function requestToken(){devToken=prompt('Enter DIR-CSAF local development access token')||'';return devToken;}
 const api=async(path,method='GET',data)=>{
- const r=await fetch(path,{method,headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});
+ const r=await fetch(path,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+devToken},body:data?JSON.stringify(data):undefined});
  const value=await r.json();if(!r.ok)throw Error(value.error||'Request failed');return value;
 };
 const cell=(row,value)=>{const c=document.createElement('td');c.textContent=String(value??'');row.append(c)};
@@ -73,5 +75,5 @@ $('object-form').onsubmit=async e=>{e.preventDefault();try{
 $('observation-form').onsubmit=async e=>{e.preventDefault();try{
  const r=await api('/observations','POST',{object_id:$('object-id').value,observed_location:$('observed').value,observer:$('observer').value,evidence_ref:$('evidence').value});
  e.target.reset();await refresh();msg(r.discrepancy?'Discrepancy case opened':'Observation recorded; identity not verified')}catch(err){msg(err.message)}};
-refresh().catch(e=>msg('Cannot connect to the development API: '+e.message));
+if(requestToken())refresh().catch(e=>msg('Cannot connect to the development API: '+e.message));else msg('Development token required');
 </script></body></html>
