@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "DIR-CSAF Field Verification",
+    "slug": "dir-csaf-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Capture collection object observations.",
+        "NSPhotoLibraryUsageDescription": "Select reference photographs for field observations."
+      }
+    },
+    "android": {
+      "permissions": [
+        "CAMERA"
+      ],
+      "package": "org.dircsaf.fieldverification"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow DIR-CSAF to capture collection photographs.",
+          "photosPermission": "Allow DIR-CSAF to select collection photographs."
+        }
+      ]
+    ]
+  }
+}
