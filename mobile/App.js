@@ -50,9 +50,9 @@ export default function App(){
    let current=queue;
    try{
      for(const item of pending(current)){
-       const response=await fetch(apiUrl.replace(/\/$/,'')+'/observations',{
+       const response=await fetch(apiUrl.replace(/\/$/,'')+'/observations/sync',{
          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-         body:JSON.stringify({object_id:item.object_id,observed_location:item.observed_location,
+         body:JSON.stringify({client_id:'dircsaf-field-v1',request_id:item.local_id,object_id:item.object_id,observed_location:item.observed_location,
            observer:item.observer,evidence_ref:item.evidence_ref})});
        const result=await response.json();
        if(!response.ok)throw new Error(result.error||'HTTP '+response.status);
