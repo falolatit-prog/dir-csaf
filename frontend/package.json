@@ -1,0 +1,12 @@
+{
+  "name": "dircsaf-vercel-console",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "build": "node scripts/build.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
