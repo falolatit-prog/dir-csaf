@@ -39,3 +39,25 @@ curl -X POST http://127.0.0.1:8765/objects -H 'Content-Type: application/json' -
 ```
 
 See [framework specification](docs/FRAMEWORK_SPECIFICATION_v0.1.md) for the architecture and planned evaluation.
+
+## Browser console and persistent stewardship workflow
+
+The development server serves the stewardship console at `http://127.0.0.1:8765/`.
+Set a **locally generated**, random development token before starting the server:
+
+```bash
+cd backend
+export DIRCSAF_DEV_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+python server.py
+```
+
+On Windows PowerShell, set `$env:DIRCSAF_DEV_TOKEN` to a locally generated random token before starting the server. The console prompts for that token and holds it in page memory only. Do not publish or commit tokens.
+
+Additional routes:
+- `GET /dashboard`, `GET /objects`, `GET /actions`
+- `POST /evidence`, `POST /assessments`, `POST /actions`
+- `POST /actions/{id}/transition`
+
+All JSON API routes require `Authorization: Bearer <token>`. This is **single-token development authentication**, not production identity management or role-based authorization. The browser console is not suitable for public hosting. Evidence references are not authenticated; image content storage and mobile capture are not implemented. AI assessments can be stored, but model outputs are not yet connected automatically to object workflows.
+
+Run all unit tests with `cd backend && python -m unittest discover -v`. Tests must pass in CI before a release is considered verified.
